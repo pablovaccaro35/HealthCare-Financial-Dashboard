@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthcare Financial Dashboard — MedAnalytics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B0F1A;--card:#121829;--card-h:#1A2238;--brd:#1E2A45;--t1:#E8ECF4;--t2:#7A8BB5;--t3:#4A5A80;--teal:#00D4AA;--blue:#3B82F6;--amber:#F59E0B;--rose:#F43F5E;--violet:#8B5CF6;--cyan:#06B6D4;--r:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body.light{--bg:#F4F6FA;--card:#FFFFFF;--card-h:#F8FAFC;--brd:#E2E8F0;--t1:#1A1A2E;--t2:#4A5568;--t3:#718096;--teal:#00A882;--blue:#2563EB;--amber:#D97706;--rose:#E11D48;--violet:#7C3AED;--cyan:#0891B2}
+body.light::before{background-image:linear-gradient(rgba(200,210,230,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(200,210,230,.2) 1px,transparent 1px)}
+body.light::after{background:radial-gradient(circle,rgba(0,168,130,.04) 0%,transparent 70%)}
+.theme-toggle{background:var(--card);border:1px solid var(--brd);color:var(--t2);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all .2s;flex-shrink:0}
+.theme-toggle:hover{border-color:var(--teal);color:var(--teal)}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(30,42,69,.3) 1px,transparent 1px),linear-gradient(90deg,rgba(30,42,69,.3) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(0,212,170,.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+.w{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 32px 48px}
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--brd)}
+.hdr h1{font-size:26px;font-weight:700;letter-spacing:-.5px;display:flex;align-items:center;gap:12px}
+.hdr .ico{width:36px;height:36px;background:linear-gradient(135deg,var(--teal),var(--blue));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.hdr p{color:var(--t2);font-size:13.5px;margin-top:6px}
+.yf{display:flex;gap:6px}
+.yp{background:transparent;border:1px solid var(--brd);color:var(--t3);padding:5px 12px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;transition:all .2s}
+.yp:hover{border-color:var(--teal);color:var(--teal)}
+.yp.on{background:var(--teal);border-color:var(--teal);color:var(--bg);font-weight:600}
+.badge{display:inline-block;background:rgba(0,212,170,.15);color:var(--teal);font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace}
+.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kc{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:22px 24px;position:relative;overflow:hidden;transition:all .3s}
+.kc:hover{background:var(--card-h);transform:translateY(-2px);box-shadow:0 4px 24px rgba(0,0,0,.3)}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kc:nth-child(1)::before{background:linear-gradient(90deg,var(--teal),var(--cyan))}
+.kc:nth-child(2)::before{background:linear-gradient(90deg,var(--blue),var(--violet))}
+.kc:nth-child(3)::before{background:linear-gradient(90deg,var(--amber),#F97316)}
+.kc:nth-child(4)::before{background:linear-gradient(90deg,var(--rose),var(--violet))}
+.kl{font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px}
+.kv{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:600;letter-spacing:-1px;transition:all .3s}
+.kc:nth-child(1) .kv{color:var(--teal)}.kc:nth-child(2) .kv{color:var(--blue)}.kc:nth-child(3) .kv{color:var(--amber)}.kc:nth-child(4) .kv{color:var(--rose)}
+.ks{font-size:12px;color:var(--t2);margin-top:6px}
+.g2{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.ge{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.cc{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:24px;transition:all .3s}
+.cc:hover{box-shadow:0 4px 24px rgba(0,0,0,.3)}
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.ct{font-size:15px;font-weight:600}.cs{font-size:12px;color:var(--t3);margin-top:2px}
+.cx{position:relative;width:100%}
+.cx canvas{width:100%!important}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+thead th{text-align:left;padding:10px 14px;color:var(--t3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--brd)}
+tbody td{padding:12px 14px;border-bottom:1px solid rgba(30,42,69,.5);color:var(--t2)}
+tbody tr:hover td{background:rgba(0,212,170,.03);color:var(--t1)}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.bc{display:flex;align-items:center;gap:10px}
+.bb{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.bf{height:100%;border-radius:3px;transition:width .8s ease}
+.hl{font-size:11.5px;color:var(--t2);font-weight:500;padding:8px 4px;display:flex;align-items:center}
+.hc{border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;padding:14px 8px;transition:all .2s;cursor:default}
+.hc:hover{transform:scale(1.05);z-index:2}
+.ft{margin-top:36px;padding-top:20px;border-top:1px solid var(--brd);display:flex;justify-content:space-between;font-size:12px;color:var(--t3)}
+.ft a{color:var(--teal);text-decoration:none}
+@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.kc,.cc{animation:fu .5s ease both}
+.kc:nth-child(1){animation-delay:.05s}.kc:nth-child(2){animation-delay:.1s}.kc:nth-child(3){animation-delay:.15s}.kc:nth-child(4){animation-delay:.2s}
+.cc{animation-delay:.25s}
+@media(max-width:1100px){.kg{grid-template-columns:repeat(2,1fr)}.g2,.g3,.ge{grid-template-columns:1fr}.w{padding:20px 16px}}
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="hdr">
+    <div>
+      <h1><span class="ico">⚕</span>Healthcare Financial Dashboard</h1>
+      <p id="subtitle">55,500 patient records · 2019–2024 · Billing & Operations Analysis</p>
+    </div>
+    <div class="yf" id="yf">
+      <button class="theme-toggle" id="themeBtn" title="Toggle light/dark mode">&#9790;</button>
+      <button class="yp on" data-y="all">All Years</button>
+      <button class="yp" data-y="2019">2019</button>
+      <button class="yp" data-y="2020">2020</button>
+      <button class="yp" data-y="2021">2021</button>
+      <button class="yp" data-y="2022">2022</button>
+      <button class="yp" data-y="2023">2023</button>
+      <button class="yp" data-y="2024">2024</button>
+    </div>
+  </div>
+  <div class="kg">
+    <div class="kc"><div class="kl">Total Revenue</div><div class="kv" id="k1"></div><div class="ks" id="k1s"></div></div>
+    <div class="kc"><div class="kl">Total Patients</div><div class="kv" id="k2"></div><div class="ks" id="k2s"></div></div>
+    <div class="kc"><div class="kl">Avg Billing / Patient</div><div class="kv" id="k3"></div><div class="ks" id="k3s"></div></div>
+    <div class="kc"><div class="kl">Avg Length of Stay</div><div class="kv" id="k4"></div><div class="ks" id="k4s"></div></div>
+  </div>
+  <div class="g2">
+    <div class="cc"><div class="ch"><div><div class="ct">Monthly Revenue Trend</div><div class="cs" id="trendSub"></div></div><span class="badge">TREND</span></div><div class="cx" style="height:280px"><canvas id="c1"></canvas></div></div>
+    <div class="cc"><div class="ch"><div><div class="ct">Admission Type Mix</div><div class="cs">Revenue share by admission category</div></div></div><div class="cx" style="height:280px"><canvas id="c2"></canvas></div></div>
+  </div>
+  <div class="g3">
+    <div class="cc"><div class="ch"><div><div class="ct">Revenue by Condition</div><div class="cs">Total billing per medical condition</div></div></div><div class="cx" style="height:280px"><canvas id="c3"></canvas></div></div>
+    <div class="cc"><div class="ch"><div><div class="ct">Insurance Provider Split</div><div class="cs">Revenue distribution by payer</div></div></div><div class="cx" style="height:280px"><canvas id="c4"></canvas></div></div>
+    <div class="cc"><div class="ch"><div><div class="ct">Billing by Age Group</div><div class="cs">Avg billing amount per age bracket</div></div></div><div class="cx" style="height:280px"><canvas id="c5"></canvas></div></div>
+  </div>
+  <div class="ge">
+    <div class="cc"><div class="ch"><div><div class="ct">Condition × Payer Revenue Matrix</div><div class="cs">Billing concentration heatmap (millions USD)</div></div></div><div id="hm"></div></div>
+    <div class="cc"><div class="ch"><div><div class="ct">Clinical & Financial Summary</div><div class="cs">Key metrics by medical condition</div></div></div><table><thead><tr><th>Condition</th><th>Patients</th><th>Avg Billing</th><th>Avg LOS</th><th>Revenue Share</th></tr></thead><tbody id="tb"></tbody></table></div>
+  </div>
+  <div class="ge">
+    <div class="cc"><div class="ch"><div><div class="ct">Year-over-Year Revenue</div><div class="cs">Annual billing volume comparison</div></div><span class="badge">YoY</span></div><div class="cx" style="height:240px"><canvas id="c6"></canvas></div></div>
+    <div class="cc"><div class="ch"><div><div class="ct">Patient Volume by Year</div><div class="cs">Annual admission count</div></div></div><div class="cx" style="height:240px"><canvas id="c7"></canvas></div></div>
+  </div>
+  <div class="ft"><span>MedAnalytics Dashboard v2.0 — Portfolio Project</span><span>Data: 55,500 records · Built with Chart.js</span></div>
+</div>
+
+<script>
+// ══════════════════════════════════
+// ALL DATA BY YEAR (pre-computed)
+// ══════════════════════════════════
+const ALL_DATA = {"all":{"kpis":{"total_billing":1417485968,"total_patients":55500,"avg_billing":25540,"avg_los":15.5},"monthly":[{"month":"2019-05","total":17654854,"count":680,"avg":25963},{"month":"2019-06","total":23885571,"count":905,"avg":26393},{"month":"2019-07","total":24771831,"count":956,"avg":25912},{"month":"2019-08","total":25399532,"count":998,"avg":25450},{"month":"2019-09","total":23334080,"count":936,"avg":24930},{"month":"2019-10","total":26278288,"count":1009,"avg":26044},{"month":"2019-11","total":24785217,"count":956,"avg":25926},{"month":"2019-12","total":23747988,"count":925,"avg":25674},{"month":"2020-01","total":24373123,"count":947,"avg":25737},{"month":"2020-02","total":22324347,"count":881,"avg":25340},{"month":"2020-03","total":23909841,"count":935,"avg":25572},{"month":"2020-04","total":23131290,"count":920,"avg":25143},{"month":"2020-05","total":24968387,"count":976,"avg":25582},{"month":"2020-06","total":24303900,"count":934,"avg":26021},{"month":"2020-07","total":24993722,"count":1007,"avg":24820},{"month":"2020-08","total":25817323,"count":1013,"avg":25486},{"month":"2020-09","total":22422839,"count":903,"avg":24831},{"month":"2020-10","total":24103665,"count":962,"avg":25056},{"month":"2020-11","total":22884408,"count":903,"avg":25343},{"month":"2020-12","total":23325695,"count":889,"avg":26238},{"month":"2021-01","total":23805472,"count":930,"avg":25597},{"month":"2021-02","total":21375790,"count":834,"avg":25630},{"month":"2021-03","total":25117008,"count":965,"avg":26028},{"month":"2021-04","total":22434087,"count":867,"avg":25876},{"month":"2021-05","total":22623113,"count":903,"avg":25053},{"month":"2021-06","total":24141759,"count":925,"avg":26099},{"month":"2021-07","total":25245402,"count":977,"avg":25840},{"month":"2021-08","total":22766513,"count":893,"avg":25494},{"month":"2021-09","total":21754518,"count":865,"avg":25150},{"month":"2021-10","total":23827050,"count":892,"avg":26712},{"month":"2021-11","total":23277657,"count":908,"avg":25636},{"month":"2021-12","total":23795791,"count":951,"avg":25022},{"month":"2022-01","total":24734097,"count":968,"avg":25552},{"month":"2022-02","total":19200071,"count":775,"avg":24774},{"month":"2022-03","total":24178936,"count":936,"avg":25832},{"month":"2022-04","total":22566700,"count":878,"avg":25702},{"month":"2022-05","total":22867526,"count":891,"avg":25665},{"month":"2022-06","total":24531879,"count":967,"avg":25369},{"month":"2022-07","total":24612394,"count":950,"avg":25908},{"month":"2022-08","total":23855051,"count":953,"avg":25032},{"month":"2022-09","total":23558898,"count":917,"avg":25691},{"month":"2022-10","total":23356059,"count":909,"avg":25694},{"month":"2022-11","total":23491266,"count":894,"avg":26277},{"month":"2022-12","total":24143002,"count":955,"avg":25281},{"month":"2023-01","total":24181433,"count":929,"avg":26030},{"month":"2023-02","total":22458473,"count":878,"avg":25579},{"month":"2023-03","total":22467561,"count":920,"avg":24421},{"month":"2023-04","total":22914832,"count":897,"avg":25546},{"month":"2023-05","total":22905425,"count":927,"avg":24709},{"month":"2023-06","total":25038531,"count":958,"avg":26136},{"month":"2023-07","total":23133759,"count":919,"avg":25173},{"month":"2023-08","total":24826732,"count":967,"avg":25674},{"month":"2023-09","total":23674783,"count":920,"avg":25733},{"month":"2023-10","total":24029183,"count":897,"avg":26788},{"month":"2023-11","total":22522236,"count":880,"avg":25593},{"month":"2023-12","total":23834427,"count":916,"avg":26020},{"month":"2024-01","total":23437429,"count":909,"avg":25784},{"month":"2024-02","total":22543493,"count":876,"avg":25735},{"month":"2024-03","total":22893251,"count":904,"avg":25324},{"month":"2024-04","total":23517180,"count":944,"avg":24912},{"month":"2024-05","total":5431298,"count":213,"avg":25499}],"conditions":[{"condition":"Diabetes","total":238547768,"count":9284,"avg":25695},{"condition":"Obesity","total":238225285,"count":9212,"avg":25860},{"condition":"Arthritis","total":237334967,"count":9297,"avg":25528},{"condition":"Hypertension","total":235729412,"count":9224,"avg":25556},{"condition":"Asthma","total":235469671,"count":9167,"avg":25687},{"condition":"Cancer","total":232178864,"count":9208,"avg":25215}],"insurances":[{"provider":"Cigna","total":287151707,"count":11225,"avg":25581},{"provider":"Medicare","total":285731212,"count":11132,"avg":25668},{"provider":"Blue Cross","total":283262242,"count":11043,"avg":25651},{"provider":"UnitedHealthcare","total":282459703,"count":11106,"avg":25433},{"provider":"Aetna","total":278881104,"count":10886,"avg":25618}],"admissions":[{"type":"Urgent","total":474030377,"count":18538,"avg":25571},{"type":"Emergency","total":465823720,"count":18236,"avg":25544},{"type":"Elective","total":477631871,"count":18618,"avg":25654}],"age_data":[{"range":"10-19","total":44499754,"count":1690,"avg":26331},{"range":"20-29","total":203441520,"count":7986,"avg":25475},{"range":"30-39","total":210108303,"count":8162,"avg":25742},{"range":"40-49","total":207067622,"count":8113,"avg":25523},{"range":"50-59","total":213011082,"count":8333,"avg":25562},{"range":"60-69","total":209138621,"count":8163,"avg":25620},{"range":"70-79","total":206492033,"count":8058,"avg":25626},{"range":"80-89","total":123727033,"count":4887,"avg":25318}],"los_data":[{"condition":"Cancer","avg_los":15.5,"avg_billing":25215,"count":9208},{"condition":"Obesity","avg_los":15.5,"avg_billing":25860,"count":9212},{"condition":"Diabetes","avg_los":15.4,"avg_billing":25695,"count":9284},{"condition":"Asthma","avg_los":15.7,"avg_billing":25687,"count":9167},{"condition":"Hypertension","avg_los":15.5,"avg_billing":25556,"count":9224},{"condition":"Arthritis","avg_los":15.5,"avg_billing":25528,"count":9297}],"yearly":[{"year":2019,"total":189857361,"count":7365,"avg":25778},{"year":2020,"total":286558539,"count":11270,"avg":25427},{"year":2021,"total":280164160,"count":10910,"avg":25680},{"year":2022,"total":281095882,"count":10993,"avg":25570},{"year":2023,"total":281987374,"count":11008,"avg":25617},{"year":2024,"total":97822652,"count":3846,"avg":25435}],"heatmap":[{"condition":"Arthritis","provider":"Aetna","total":46680231},{"condition":"Arthritis","provider":"Blue Cross","total":47768245},{"condition":"Arthritis","provider":"Cigna","total":48107514},{"condition":"Arthritis","provider":"Medicare","total":46778614},{"condition":"Arthritis","provider":"UnitedHealthcare","total":48000365},{"condition":"Asthma","provider":"Aetna","total":44976038},{"condition":"Asthma","provider":"Blue Cross","total":46135649},{"condition":"Asthma","provider":"Cigna","total":48842706},{"condition":"Asthma","provider":"Medicare","total":47232160},{"condition":"Asthma","provider":"UnitedHealthcare","total":48283118},{"condition":"Cancer","provider":"Aetna","total":45340661},{"condition":"Cancer","provider":"Blue Cross","total":45382560},{"condition":"Cancer","provider":"Cigna","total":47687465},{"condition":"Cancer","provider":"Medicare","total":47282732},{"condition":"Cancer","provider":"UnitedHealthcare","total":46485446},{"condition":"Diabetes","provider":"Aetna","total":47094000},{"condition":"Diabetes","provider":"Blue Cross","total":48026890},{"condition":"Diabetes","provider":"Cigna","total":48559547},{"condition":"Diabetes","provider":"Medicare","total":48853976},{"condition":"Diabetes","provider":"UnitedHealthcare","total":46013355},{"condition":"Hypertension","provider":"Aetna","total":48583766},{"condition":"Hypertension","provider":"Blue Cross","total":46588891},{"condition":"Hypertension","provider":"Cigna","total":45270889},{"condition":"Hypertension","provider":"Medicare","total":47676809},{"condition":"Hypertension","provider":"UnitedHealthcare","total":47609056},{"condition":"Obesity","provider":"Aetna","total":46206408},{"condition":"Obesity","provider":"Blue Cross","total":49360007},{"condition":"Obesity","provider":"Cigna","total":48683587},{"condition":"Obesity","provider":"Medicare","total":47906920},{"condition":"Obesity","provider":"UnitedHealthcare","total":46068364}]},"2019":{"kpis":{"total_billing":189857361,"total_patients":7387,"avg_billing":25702,"avg_los":15.6},"monthly":[{"month":"2019-05","total":17654854,"count":680,"avg":25963},{"month":"2019-06","total":23885571,"count":905,"avg":26393},{"month":"2019-07","total":24771831,"count":956,"avg":25912},{"month":"2019-08","total":25399532,"count":998,"avg":25450},{"month":"2019-09","total":23334080,"count":936,"avg":24930},{"month":"2019-10","total":26278288,"count":1009,"avg":26044},{"month":"2019-11","total":24785217,"count":956,"avg":25926},{"month":"2019-12","total":23747988,"count":925,"avg":25674}],"conditions":[{"condition":"Asthma","total":33076909,"count":1285,"avg":25741},{"condition":"Cancer","total":32466523,"count":1278,"avg":25404},{"condition":"Diabetes","total":32431470,"count":1243,"avg":26091},{"condition":"Obesity","total":31320423,"count":1174,"avg":26678},{"condition":"Arthritis","total":30683257,"count":1201,"avg":25548},{"condition":"Hypertension","total":29878778,"count":1184,"avg":25235}],"insurances":[{"provider":"Cigna","total":39840236,"count":1544,"avg":25803},{"provider":"UnitedHealthcare","total":38525917,"count":1500,"avg":25684},{"provider":"Blue Cross","total":38263657,"count":1465,"avg":26119},{"provider":"Aetna","total":36782806,"count":1436,"avg":25615},{"provider":"Medicare","total":36444746,"count":1420,"avg":25665}],"admissions":[{"type":"Emergency","total":60281430,"count":2310,"avg":26096},{"type":"Urgent","total":64960574,"count":2536,"avg":25615},{"type":"Elective","total":64615357,"count":2519,"avg":25651}],"age_data":[{"range":"10-19","total":5898485,"count":218,"avg":27057},{"range":"20-29","total":29212981,"count":1132,"avg":25807},{"range":"30-39","total":27486589,"count":1029,"avg":26712},{"range":"40-49","total":29471389,"count":1124,"avg":26220},{"range":"50-59","total":27321824,"count":1096,"avg":24929},{"range":"60-69","total":26511259,"count":1052,"avg":25201},{"range":"70-79","total":27468847,"count":1083,"avg":25364},{"range":"80-89","total":16485988,"count":631,"avg":26127}],"los_data":[{"condition":"Obesity","avg_los":15.7,"avg_billing":26678,"count":1174},{"condition":"Diabetes","avg_los":16.0,"avg_billing":26091,"count":1243},{"condition":"Asthma","avg_los":15.8,"avg_billing":25741,"count":1285},{"condition":"Arthritis","avg_los":14.9,"avg_billing":25548,"count":1201},{"condition":"Cancer","avg_los":16.0,"avg_billing":25404,"count":1278},{"condition":"Hypertension","avg_los":15.3,"avg_billing":25235,"count":1184}],"yearly":[{"year":2019,"total":189857361,"count":7365,"avg":25778}],"heatmap":[{"condition":"Arthritis","provider":"Aetna","total":5525052},{"condition":"Arthritis","provider":"Blue Cross","total":6115395},{"condition":"Arthritis","provider":"Cigna","total":6608676},{"condition":"Arthritis","provider":"Medicare","total":5852722},{"condition":"Arthritis","provider":"UnitedHealthcare","total":6581413},{"condition":"Asthma","provider":"Aetna","total":6344357},{"condition":"Asthma","provider":"Blue Cross","total":6628981},{"condition":"Asthma","provider":"Cigna","total":7573083},{"condition":"Asthma","provider":"Medicare","total":5831683},{"condition":"Asthma","provider":"UnitedHealthcare","total":6698805},{"condition":"Cancer","provider":"Aetna","total":6725203},{"condition":"Cancer","provider":"Blue Cross","total":6175682},{"condition":"Cancer","provider":"Cigna","total":6552531},{"condition":"Cancer","provider":"Medicare","total":6443163},{"condition":"Cancer","provider":"UnitedHealthcare","total":6569944},{"condition":"Diabetes","provider":"Aetna","total":6231341},{"condition":"Diabetes","provider":"Blue Cross","total":6472686},{"condition":"Diabetes","provider":"Cigna","total":6631045},{"condition":"Diabetes","provider":"Medicare","total":6297226},{"condition":"Diabetes","provider":"UnitedHealthcare","total":6799172},{"condition":"Hypertension","provider":"Aetna","total":6153834},{"condition":"Hypertension","provider":"Blue Cross","total":6316807},{"condition":"Hypertension","provider":"Cigna","total":5183947},{"condition":"Hypertension","provider":"Medicare","total":6130101},{"condition":"Hypertension","provider":"UnitedHealthcare","total":6094088},{"condition":"Obesity","provider":"Aetna","total":5803018},{"condition":"Obesity","provider":"Blue Cross","total":6554107},{"condition":"Obesity","provider":"Cigna","total":7290954},{"condition":"Obesity","provider":"Medicare","total":5889851},{"condition":"Obesity","provider":"UnitedHealthcare","total":5782494}]},"2020":{"kpis":{"total_billing":286558539,"total_patients":11285,"avg_billing":25393,"avg_los":15.5},"monthly":[{"month":"2020-01","total":24373123,"count":947,"avg":25737},{"month":"2020-02","total":22324347,"count":881,"avg":25340},{"month":"2020-03","total":23909841,"count":935,"avg":25572},{"month":"2020-04","total":23131290,"count":920,"avg":25143},{"month":"2020-05","total":24968387,"count":976,"avg":25582},{"month":"2020-06","total":24303900,"count":934,"avg":26021},{"month":"2020-07","total":24993722,"count":1007,"avg":24820},{"month":"2020-08","total":25817323,"count":1013,"avg":25486},{"month":"2020-09","total":22422839,"count":903,"avg":24831},{"month":"2020-10","total":24103665,"count":962,"avg":25056},{"month":"2020-11","total":22884408,"count":903,"avg":25343},{"month":"2020-12","total":23325695,"count":889,"avg":26238}],"conditions":[{"condition":"Obesity","total":50074724,"count":1967,"avg":25457},{"condition":"Hypertension","total":48022199,"count":1900,"avg":25275},{"condition":"Cancer","total":47505171,"count":1899,"avg":25016},{"condition":"Asthma","total":47496564,"count":1812,"avg":26212},{"condition":"Arthritis","total":46876347,"count":1887,"avg":24842},{"condition":"Diabetes","total":46583534,"count":1805,"avg":25808}],"insurances":[{"provider":"Blue Cross","total":58272659,"count":2271,"avg":25659},{"provider":"Medicare","total":57774619,"count":2302,"avg":25098},{"provider":"Aetna","total":57541281,"count":2252,"avg":25551},{"provider":"UnitedHealthcare","total":56504493,"count":2219,"avg":25464},{"provider":"Cigna","total":56465487,"count":2226,"avg":25366}],"admissions":[{"type":"Elective","total":95268853,"count":3698,"avg":25762},{"type":"Emergency","total":96108012,"count":3852,"avg":24950},{"type":"Urgent","total":95181674,"count":3720,"avg":25586}],"age_data":[{"range":"10-19","total":9040689,"count":351,"avg":25757},{"range":"20-29","total":40240938,"count":1592,"avg":25277},{"range":"30-39","total":43041761,"count":1647,"avg":26133},{"range":"40-49","total":42402865,"count":1669,"avg":25406},{"range":"50-59","total":43219416,"count":1717,"avg":25171},{"range":"60-69","total":42931788,"count":1674,"avg":25646},{"range":"70-79","total":41615271,"count":1631,"avg":25515},{"range":"80-89","total":24065811,"count":989,"avg":24333}],"los_data":[{"condition":"Diabetes","avg_los":15.2,"avg_billing":25808,"count":1805},{"condition":"Asthma","avg_los":16.0,"avg_billing":26212,"count":1812},{"condition":"Cancer","avg_los":15.6,"avg_billing":25016,"count":1899},{"condition":"Arthritis","avg_los":15.5,"avg_billing":24842,"count":1887},{"condition":"Obesity","avg_los":15.3,"avg_billing":25457,"count":1967},{"condition":"Hypertension","avg_los":15.7,"avg_billing":25275,"count":1900}],"yearly":[{"year":2020,"total":286558539,"count":11270,"avg":25427}],"heatmap":[{"condition":"Arthritis","provider":"Aetna","total":9784723},{"condition":"Arthritis","provider":"Blue Cross","total":9608752},{"condition":"Arthritis","provider":"Cigna","total":9909898},{"condition":"Arthritis","provider":"Medicare","total":8978426},{"condition":"Arthritis","provider":"UnitedHealthcare","total":8594548},{"condition":"Asthma","provider":"Aetna","total":9192012},{"condition":"Asthma","provider":"Blue Cross","total":9768514},{"condition":"Asthma","provider":"Cigna","total":9133426},{"condition":"Asthma","provider":"Medicare","total":9733621},{"condition":"Asthma","provider":"UnitedHealthcare","total":9668991},{"condition":"Cancer","provider":"Aetna","total":9521805},{"condition":"Cancer","provider":"Blue Cross","total":9722468},{"condition":"Cancer","provider":"Cigna","total":8681830},{"condition":"Cancer","provider":"Medicare","total":10114768},{"condition":"Cancer","provider":"UnitedHealthcare","total":9464300},{"condition":"Diabetes","provider":"Aetna","total":9542799},{"condition":"Diabetes","provider":"Blue Cross","total":9576194},{"condition":"Diabetes","provider":"Cigna","total":9294827},{"condition":"Diabetes","provider":"Medicare","total":9424707},{"condition":"Diabetes","provider":"UnitedHealthcare","total":8745007},{"condition":"Hypertension","provider":"Aetna","total":9561071},{"condition":"Hypertension","provider":"Blue Cross","total":10052566},{"condition":"Hypertension","provider":"Cigna","total":9278701},{"condition":"Hypertension","provider":"Medicare","total":9807059},{"condition":"Hypertension","provider":"UnitedHealthcare","total":9322801},{"condition":"Obesity","provider":"Aetna","total":9938870},{"condition":"Obesity","provider":"Blue Cross","total":9544165},{"condition":"Obesity","provider":"Cigna","total":10166805},{"condition":"Obesity","provider":"Medicare","total":9716038},{"condition":"Obesity","provider":"UnitedHealthcare","total":10708846}]},"2021":{"kpis":{"total_billing":280164160,"total_patients":10931,"avg_billing":25630,"avg_los":15.4},"monthly":[{"month":"2021-01","total":23805472,"count":930,"avg":25597},{"month":"2021-02","total":21375790,"count":834,"avg":25630},{"month":"2021-03","total":25117008,"count":965,"avg":26028},{"month":"2021-04","total":22434087,"count":867,"avg":25876},{"month":"2021-05","total":22623113,"count":903,"avg":25053},{"month":"2021-06","total":24141759,"count":925,"avg":26099},{"month":"2021-07","total":25245402,"count":977,"avg":25840},{"month":"2021-08","total":22766513,"count":893,"avg":25494},{"month":"2021-09","total":21754518,"count":865,"avg":25150},{"month":"2021-10","total":23827050,"count":892,"avg":26712},{"month":"2021-11","total":23277657,"count":908,"avg":25636},{"month":"2021-12","total":23795791,"count":951,"avg":25022}],"conditions":[{"condition":"Hypertension","total":48326721,"count":1867,"avg":25885},{"condition":"Asthma","total":47248925,"count":1834,"avg":25763},{"condition":"Arthritis","total":46993733,"count":1846,"avg":25457},{"condition":"Obesity","total":46736384,"count":1825,"avg":25609},{"condition":"Diabetes","total":46415397,"count":1792,"avg":25901},{"condition":"Cancer","total":44443000,"count":1746,"avg":25454}],"insurances":[{"provider":"Blue Cross","total":56737251,"count":2204,"avg":25743},{"provider":"Aetna","total":56451803,"count":2176,"avg":25943},{"provider":"Medicare","total":56331500,"count":2185,"avg":25781},{"provider":"Cigna","total":56309240,"count":2180,"avg":25830},{"provider":"UnitedHealthcare","total":54334365,"count":2165,"avg":25097}],"admissions":[{"type":"Emergency","total":90473050,"count":3559,"avg":25421},{"type":"Elective","total":95810832,"count":3724,"avg":25728},{"type":"Urgent","total":93880278,"count":3627,"avg":25884}],"age_data":[{"range":"10-19","total":8174472,"count":319,"avg":25625},{"range":"20-29","total":39082815,"count":1541,"avg":25362},{"range":"30-39","total":43380693,"count":1675,"avg":25899},{"range":"40-49","total":40002418,"count":1567,"avg":25528},{"range":"50-59","total":42089321,"count":1628,"avg":25853},{"range":"60-69","total":41178129,"count":1606,"avg":25640},{"range":"70-79","total":41965301,"count":1633,"avg":25698},{"range":"80-89","total":24291012,"count":941,"avg":25814}],"los_data":[{"condition":"Cancer","avg_los":15.3,"avg_billing":25454,"count":1746},{"condition":"Hypertension","avg_los":15.5,"avg_billing":25885,"count":1867},{"condition":"Asthma","avg_los":15.4,"avg_billing":25763,"count":1834},{"condition":"Obesity","avg_los":15.5,"avg_billing":25609,"count":1825},{"condition":"Diabetes","avg_los":15.4,"avg_billing":25901,"count":1792},{"condition":"Arthritis","avg_los":15.6,"avg_billing":25457,"count":1846}],"yearly":[{"year":2021,"total":280164160,"count":10910,"avg":25680}],"heatmap":[{"condition":"Arthritis","provider":"Aetna","total":9245349},{"condition":"Arthritis","provider":"Blue Cross","total":9784463},{"condition":"Arthritis","provider":"Cigna","total":9625828},{"condition":"Arthritis","provider":"Medicare","total":8836198},{"condition":"Arthritis","provider":"UnitedHealthcare","total":9501896},{"condition":"Asthma","provider":"Aetna","total":9296449},{"condition":"Asthma","provider":"Blue Cross","total":9782672},{"condition":"Asthma","provider":"Cigna","total":9341901},{"condition":"Asthma","provider":"Medicare","total":9279555},{"condition":"Asthma","provider":"UnitedHealthcare","total":9548348},{"condition":"Cancer","provider":"Aetna","total":9253748},{"condition":"Cancer","provider":"Blue Cross","total":8688560},{"condition":"Cancer","provider":"Cigna","total":9144756},{"condition":"Cancer","provider":"Medicare","total":8939398},{"condition":"Cancer","provider":"UnitedHealthcare","total":8416539},{"condition":"Diabetes","provider":"Aetna","total":9481237},{"condition":"Diabetes","provider":"Blue Cross","total":9142081},{"condition":"Diabetes","provider":"Cigna","total":9515286},{"condition":"Diabetes","provider":"Medicare","total":9690380},{"condition":"Diabetes","provider":"UnitedHealthcare","total":8586412},{"condition":"Hypertension","provider":"Aetna","total":10367751},{"condition":"Hypertension","provider":"Blue Cross","total":9523113},{"condition":"Hypertension","provider":"Cigna","total":9108122},{"condition":"Hypertension","provider":"Medicare","total":9569308},{"condition":"Hypertension","provider":"UnitedHealthcare","total":9758428},{"condition":"Obesity","provider":"Aetna","total":8807270},{"condition":"Obesity","provider":"Blue Cross","total":9816362},{"condition":"Obesity","provider":"Cigna","total":9573347},{"condition":"Obesity","provider":"Medicare","total":10016662},{"condition":"Obesity","provider":"UnitedHealthcare","total":8522742}]},"2022":{"kpis":{"total_billing":281095882,"total_patients":11017,"avg_billing":25515,"avg_los":15.4},"monthly":[{"month":"2022-01","total":24734097,"count":968,"avg":25552},{"month":"2022-02","total":19200071,"count":775,"avg":24774},{"month":"2022-03","total":24178936,"count":936,"avg":25832},{"month":"2022-04","total":22566700,"count":878,"avg":25702},{"month":"2022-05","total":22867526,"count":891,"avg":25665},{"month":"2022-06","total":24531879,"count":967,"avg":25369},{"month":"2022-07","total":24612394,"count":950,"avg":25908},{"month":"2022-08","total":23855051,"count":953,"avg":25032},{"month":"2022-09","total":23558898,"count":917,"avg":25691},{"month":"2022-10","total":23356059,"count":909,"avg":25694},{"month":"2022-11","total":23491266,"count":894,"avg":26277},{"month":"2022-12","total":24143002,"count":955,"avg":25281}],"conditions":[{"condition":"Diabetes","total":49624704,"count":1939,"avg":25593},{"condition":"Arthritis","total":48066722,"count":1846,"avg":26038},{"condition":"Hypertension","total":47244431,"count":1837,"avg":25718},{"condition":"Obesity","total":46169647,"count":1783,"avg":25894},{"condition":"Cancer","total":45042564,"count":1822,"avg":24721},{"condition":"Asthma","total":44947815,"count":1766,"avg":25452}],"insurances":[{"provider":"Medicare","total":58188341,"count":2240,"avg":25977},{"provider":"Cigna","total":57022633,"count":2232,"avg":25548},{"provider":"UnitedHealthcare","total":55983354,"count":2215,"avg":25275},{"provider":"Aetna","total":55726173,"count":2162,"avg":25775},{"provider":"Blue Cross","total":54175382,"count":2144,"avg":25268}],"admissions":[{"type":"Emergency","total":91645107,"count":3550,"avg":25816},{"type":"Urgent","total":94990696,"count":3690,"avg":25743},{"type":"Elective","total":94460079,"count":3753,"avg":25169}],"age_data":[{"range":"10-19","total":8831030,"count":329,"avg":26842},{"range":"20-29","total":39596755,"count":1579,"avg":25077},{"range":"30-39","total":40378721,"count":1592,"avg":25364},{"range":"40-49","total":40632362,"count":1591,"avg":25539},{"range":"50-59","total":42697862,"count":1651,"avg":25862},{"range":"60-69","total":41597230,"count":1619,"avg":25693},{"range":"70-79","total":41392030,"count":1626,"avg":25456},{"range":"80-89","total":25969891,"count":1006,"avg":25815}],"los_data":[{"condition":"Obesity","avg_los":15.3,"avg_billing":25894,"count":1783},{"condition":"Cancer","avg_los":15.1,"avg_billing":24721,"count":1822},{"condition":"Asthma","avg_los":15.6,"avg_billing":25452,"count":1766},{"condition":"Arthritis","avg_los":15.4,"avg_billing":26038,"count":1846},{"condition":"Diabetes","avg_los":15.5,"avg_billing":25593,"count":1939},{"condition":"Hypertension","avg_los":15.3,"avg_billing":25718,"count":1837}],"yearly":[{"year":2022,"total":281095882,"count":10993,"avg":25570}],"heatmap":[{"condition":"Arthritis","provider":"Aetna","total":9865530},{"condition":"Arthritis","provider":"Blue Cross","total":8743476},{"condition":"Arthritis","provider":"Cigna","total":9483655},{"condition":"Arthritis","provider":"Medicare","total":10226402},{"condition":"Arthritis","provider":"UnitedHealthcare","total":9747658},{"condition":"Asthma","provider":"Aetna","total":8208093},{"condition":"Asthma","provider":"Blue Cross","total":8160030},{"condition":"Asthma","provider":"Cigna","total":9775285},{"condition":"Asthma","provider":"Medicare","total":9330550},{"condition":"Asthma","provider":"UnitedHealthcare","total":9473858},{"condition":"Cancer","provider":"Aetna","total":8588330},{"condition":"Cancer","provider":"Blue Cross","total":7810342},{"condition":"Cancer","provider":"Cigna","total":10049731},{"condition":"Cancer","provider":"Medicare","total":9344996},{"condition":"Cancer","provider":"UnitedHealthcare","total":9249165},{"condition":"Diabetes","provider":"Aetna","total":9952808},{"condition":"Diabetes","provider":"Blue Cross","total":10428517},{"condition":"Diabetes","provider":"Cigna","total":10093284},{"condition":"Diabetes","provider":"Medicare","total":9850477},{"condition":"Diabetes","provider":"UnitedHealthcare","total":9299617},{"condition":"Hypertension","provider":"Aetna","total":10274952},{"condition":"Hypertension","provider":"Blue Cross","total":8760741},{"condition":"Hypertension","provider":"Cigna","total":9096383},{"condition":"Hypertension","provider":"Medicare","total":9918464},{"condition":"Hypertension","provider":"UnitedHealthcare","total":9193890},{"condition":"Obesity","provider":"Aetna","total":8836460},{"condition":"Obesity","provider":"Blue Cross","total":10272274},{"condition":"Obesity","provider":"Cigna","total":8524294},{"condition":"Obesity","provider":"Medicare","total":9517452},{"condition":"Obesity","provider":"UnitedHealthcare","total":9019167}]},"2023":{"kpis":{"total_billing":281987374,"total_patients":11026,"avg_billing":25575,"avg_los":15.5},"monthly":[{"month":"2023-01","total":24181433,"count":929,"avg":26030},{"month":"2023-02","total":22458473,"count":878,"avg":25579},{"month":"2023-03","total":22467561,"count":920,"avg":24421},{"month":"2023-04","total":22914832,"count":897,"avg":25546},{"month":"2023-05","total":22905425,"count":927,"avg":24709},{"month":"2023-06","total":25038531,"count":958,"avg":26136},{"month":"2023-07","total":23133759,"count":919,"avg":25173},{"month":"2023-08","total":24826732,"count":967,"avg":25674},{"month":"2023-09","total":23674783,"count":920,"avg":25733},{"month":"2023-10","total":24029183,"count":897,"avg":26788},{"month":"2023-11","total":22522236,"count":880,"avg":25593},{"month":"2023-12","total":23834427,"count":916,"avg":26020}],"conditions":[{"condition":"Obesity","total":48543807,"count":1859,"avg":26113},{"condition":"Hypertension","total":47221322,"count":1839,"avg":25678},{"condition":"Arthritis","total":47092061,"count":1825,"avg":25804},{"condition":"Cancer","total":47090909,"count":1842,"avg":25565},{"condition":"Diabetes","total":46806108,"count":1852,"avg":25273},{"condition":"Asthma","total":45233168,"count":1791,"avg":25256}],"insurances":[{"provider":"Medicare","total":58012396,"count":2254,"avg":25738},{"provider":"Cigna","total":57810866,"count":2264,"avg":25535},{"provider":"UnitedHealthcare","total":57739514,"count":2247,"avg":25696},{"provider":"Blue Cross","total":55889884,"count":2165,"avg":25815},{"provider":"Aetna","total":52534714,"count":2078,"avg":25281}],"admissions":[{"type":"Urgent","total":93182165,"count":3697,"avg":25205},{"type":"Elective","total":94054692,"count":3627,"avg":25932},{"type":"Emergency","total":94750518,"count":3684,"avg":25719}],"age_data":[{"range":"10-19","total":9500943,"count":355,"avg":26763},{"range":"20-29","total":40585053,"count":1588,"avg":25557},{"range":"30-39","total":41748688,"count":1659,"avg":25165},{"range":"40-49","total":40171304,"count":1590,"avg":25265},{"range":"50-59","total":43063377,"count":1667,"avg":25833},{"range":"60-69","total":41831443,"count":1627,"avg":25711},{"range":"70-79","total":39639225,"count":1513,"avg":26199},{"range":"80-89","total":25447341,"count":1009,"avg":25220}],"los_data":[{"condition":"Asthma","avg_los":15.7,"avg_billing":25256,"count":1791},{"condition":"Hypertension","avg_los":15.3,"avg_billing":25678,"count":1839},{"condition":"Obesity","avg_los":15.5,"avg_billing":26113,"count":1859},{"condition":"Arthritis","avg_los":15.5,"avg_billing":25804,"count":1825},{"condition":"Cancer","avg_los":15.9,"avg_billing":25565,"count":1842},{"condition":"Diabetes","avg_los":15.1,"avg_billing":25273,"count":1852}],"yearly":[{"year":2023,"total":281987374,"count":11008,"avg":25617}],"heatmap":[{"condition":"Arthritis","provider":"Aetna","total":9016187},{"condition":"Arthritis","provider":"Blue Cross","total":9963930},{"condition":"Arthritis","provider":"Cigna","total":9200298},{"condition":"Arthritis","provider":"Medicare","total":8903436},{"condition":"Arthritis","provider":"UnitedHealthcare","total":10008211},{"condition":"Asthma","provider":"Aetna","total":8607125},{"condition":"Asthma","provider":"Blue Cross","total":8068055},{"condition":"Asthma","provider":"Cigna","total":9250630},{"condition":"Asthma","provider":"Medicare","total":10040024},{"condition":"Asthma","provider":"UnitedHealthcare","total":9267334},{"condition":"Cancer","provider":"Aetna","total":8363918},{"condition":"Cancer","provider":"Blue Cross","total":9992315},{"condition":"Cancer","provider":"Cigna","total":9727515},{"condition":"Cancer","provider":"Medicare","total":9623863},{"condition":"Cancer","provider":"UnitedHealthcare","total":9383299},{"condition":"Diabetes","provider":"Aetna","total":8654453},{"condition":"Diabetes","provider":"Blue Cross","total":9010044},{"condition":"Diabetes","provider":"Cigna","total":9488281},{"condition":"Diabetes","provider":"Medicare","total":10242304},{"condition":"Diabetes","provider":"UnitedHealthcare","total":9411026},{"condition":"Hypertension","provider":"Aetna","total":8591571},{"condition":"Hypertension","provider":"Blue Cross","total":8657516},{"condition":"Hypertension","provider":"Cigna","total":10305269},{"condition":"Hypertension","provider":"Medicare","total":9287665},{"condition":"Hypertension","provider":"UnitedHealthcare","total":10379300},{"condition":"Obesity","provider":"Aetna","total":9301461},{"condition":"Obesity","provider":"Blue Cross","total":10198024},{"condition":"Obesity","provider":"Cigna","total":9838874},{"condition":"Obesity","provider":"Medicare","total":9915104},{"condition":"Obesity","provider":"UnitedHealthcare","total":9290344}]},"2024":{"kpis":{"total_billing":97822652,"total_patients":3854,"avg_billing":25382,"avg_los":15.8},"monthly":[{"month":"2024-01","total":23437429,"count":909,"avg":25784},{"month":"2024-02","total":22543493,"count":876,"avg":25735},{"month":"2024-03","total":22893251,"count":904,"avg":25324},{"month":"2024-04","total":23517180,"count":944,"avg":24912},{"month":"2024-05","total":5431298,"count":213,"avg":25499}],"conditions":[{"condition":"Arthritis","total":17622848,"count":692,"avg":25467},{"condition":"Asthma","total":17466291,"count":679,"avg":25724},{"condition":"Diabetes","total":16686555,"count":653,"avg":25554},{"condition":"Cancer","total":15630697,"count":621,"avg":25170},{"condition":"Obesity","total":15380300,"count":604,"avg":25464},{"condition":"Hypertension","total":15035960,"count":597,"avg":25186}],"insurances":[{"provider":"Blue Cross","total":19923410,"count":794,"avg":25092},{"provider":"Aetna","total":19844327,"count":782,"avg":25376},{"provider":"Cigna","total":19703245,"count":779,"avg":25293},{"provider":"UnitedHealthcare","total":19372061,"count":760,"avg":25490},{"provider":"Medicare","total":18979609,"count":731,"avg":25964}],"admissions":[{"type":"Urgent","total":31834990,"count":1268,"avg":25106},{"type":"Emergency","total":32565603,"count":1281,"avg":25422},{"type":"Elective","total":33422058,"count":1297,"avg":25769}],"age_data":[{"range":"10-19","total":3054135,"count":118,"avg":25882},{"range":"20-29","total":14722978,"count":554,"avg":26576},{"range":"30-39","total":14071851,"count":560,"avg":25128},{"range":"40-49","total":14387284,"count":572,"avg":25153},{"range":"50-59","total":14619282,"count":574,"avg":25469},{"range":"60-69","total":15088773,"count":585,"avg":25793},{"range":"70-79","total":14411359,"count":572,"avg":25195},{"range":"80-89","total":7466990,"count":311,"avg":24010}],"los_data":[{"condition":"Cancer","avg_los":15.2,"avg_billing":25170,"count":621},{"condition":"Hypertension","avg_los":15.6,"avg_billing":25186,"count":597},{"condition":"Asthma","avg_los":15.6,"avg_billing":25724,"count":679},{"condition":"Diabetes","avg_los":15.7,"avg_billing":25554,"count":653},{"condition":"Obesity","avg_los":15.8,"avg_billing":25464,"count":604},{"condition":"Arthritis","avg_los":16.6,"avg_billing":25467,"count":692}],"yearly":[{"year":2024,"total":97822652,"count":3846,"avg":25435}],"heatmap":[{"condition":"Arthritis","provider":"Aetna","total":3243390},{"condition":"Arthritis","provider":"Blue Cross","total":3552230},{"condition":"Arthritis","provider":"Cigna","total":3279159},{"condition":"Arthritis","provider":"Medicare","total":3981430},{"condition":"Arthritis","provider":"UnitedHealthcare","total":3566638},{"condition":"Asthma","provider":"Aetna","total":3328003},{"condition":"Asthma","provider":"Blue Cross","total":3727397},{"condition":"Asthma","provider":"Cigna","total":3768382},{"condition":"Asthma","provider":"Medicare","total":3016728},{"condition":"Asthma","provider":"UnitedHealthcare","total":3625782},{"condition":"Cancer","provider":"Aetna","total":2887657},{"condition":"Cancer","provider":"Blue Cross","total":2993192},{"condition":"Cancer","provider":"Cigna","total":3531102},{"condition":"Cancer","provider":"Medicare","total":2816545},{"condition":"Cancer","provider":"UnitedHealthcare","total":3402200},{"condition":"Diabetes","provider":"Aetna","total":3231361},{"condition":"Diabetes","provider":"Blue Cross","total":3397369},{"condition":"Diabetes","provider":"Cigna","total":3536823},{"condition":"Diabetes","provider":"Medicare","total":3348882},{"condition":"Diabetes","provider":"UnitedHealthcare","total":3172121},{"condition":"Hypertension","provider":"Aetna","total":3634587},{"condition":"Hypertension","provider":"Blue Cross","total":3278147},{"condition":"Hypertension","provider":"Cigna","total":2298466},{"condition":"Hypertension","provider":"Medicare","total":2964212},{"condition":"Hypertension","provider":"UnitedHealthcare","total":2860549},{"condition":"Obesity","provider":"Aetna","total":3519328},{"condition":"Obesity","provider":"Blue Cross","total":2975075},{"condition":"Obesity","provider":"Cigna","total":3289313},{"condition":"Obesity","provider":"Medicare","total":2851813},{"condition":"Obesity","provider":"UnitedHealthcare","total":2744771}]}};
+
+// ══════════════════════════════════
+// GLOBALS
+// ══════════════════════════════════
+let isDark = true;
+
+function setChartDefaults(){
+  Chart.defaults.color = isDark ? '#7A8BB5' : '#4A5568';
+  Chart.defaults.borderColor = isDark ? 'rgba(30,42,69,0.6)' : 'rgba(200,210,230,0.5)';
+}
+setChartDefaults();
+
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.plugins.legend.display = false;
+Chart.defaults.plugins.tooltip.backgroundColor = isDark ? '#1A2238' : '#FFFFFF';
+Chart.defaults.plugins.tooltip.borderColor = isDark ? '#1E2A45' : '#E2E8F0';
+Chart.defaults.plugins.tooltip.bodyColor = isDark ? '#E8ECF4' : '#1A1A2E';
+Chart.defaults.plugins.tooltip.titleColor = isDark ? '#E8ECF4' : '#1A1A2E';
+
+function updateTooltipDefaults(){
+  Chart.defaults.plugins.tooltip.backgroundColor = isDark ? '#1A2238' : '#FFFFFF';
+  Chart.defaults.plugins.tooltip.borderColor = isDark ? '#1E2A45' : '#E2E8F0';
+  Chart.defaults.plugins.tooltip.bodyColor = isDark ? '#E8ECF4' : '#1A1A2E';
+  Chart.defaults.plugins.tooltip.titleColor = isDark ? '#E8ECF4' : '#1A1A2E';
+}
+
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.titleFont = {family:"'DM Sans'",size:13,weight:'600'};
+Chart.defaults.plugins.tooltip.bodyFont = {family:"'JetBrains Mono'",size:12};
+Chart.defaults.plugins.tooltip.padding = 12;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.displayColors = false;
+
+const C = {teal:'#00D4AA',blue:'#3B82F6',amber:'#F59E0B',rose:'#F43F5E',violet:'#8B5CF6',cyan:'#06B6D4'};
+const COND_C = [C.rose,C.amber,C.blue,C.cyan,C.violet,C.teal];
+const INS_C = [C.teal,C.blue,C.amber,C.rose,C.violet];
+
+function fmt(n){if(n>=1e9)return'$'+(n/1e9).toFixed(2)+'B';if(n>=1e6)return'$'+(n/1e6).toFixed(1)+'M';if(n>=1e3)return'$'+(n/1e3).toFixed(0)+'K';return'$'+n.toFixed(0)}
+function fN(n){return n.toLocaleString('en-US')}
+
+// Store chart instances for destruction
+let charts = {};
+
+function destroyAll(){
+  Object.values(charts).forEach(c=>{if(c&&c.destroy)c.destroy()});
+  charts = {};
+}
+
+// ══════════════════════════════════
+// RENDER ALL
+// ══════════════════════════════════
+function render(yearKey){
+  destroyAll();
+  const D = ALL_DATA[yearKey];
+  const k = D.kpis;
+
+  // Subtitle
+  if(yearKey==='all'){
+    document.getElementById('subtitle').textContent = `${fN(k.total_patients)} patient records · 2019–2024 · Billing & Operations Analysis`;
+  } else {
+    document.getElementById('subtitle').textContent = `${fN(k.total_patients)} patient records · ${yearKey} · Billing & Operations Analysis`;
+  }
+
+  // KPIs
+  document.getElementById('k1').textContent = fmt(k.total_billing);
+  document.getElementById('k1s').textContent = yearKey==='all'?'5-year cumulative':'Annual total';
+  document.getElementById('k2').textContent = fN(k.total_patients);
+  const mCount = D.monthly.length || 1;
+  document.getElementById('k2s').textContent = `Ø ${fN(Math.round(k.total_patients/mCount))}/month`;
+  document.getElementById('k3').textContent = fmt(k.avg_billing);
+  document.getElementById('k3s').textContent = 'Per patient average';
+  document.getElementById('k4').textContent = k.avg_los + ' d';
+  document.getElementById('k4s').textContent = 'Across all conditions';
+
+  // Trend subtitle
+  if(D.monthly.length > 0){
+    document.getElementById('trendSub').textContent = `Total billing by month, ${D.monthly[0].month} – ${D.monthly[D.monthly.length-1].month}`;
+  }
+
+  const cardBg = isDark ? '#121829' : '#FFFFFF';
+  const gridColor = isDark ? 'rgba(30,42,69,0.4)' : 'rgba(200,210,230,0.5)';
+  const gridColorLight = isDark ? 'rgba(30,42,69,0.3)' : 'rgba(200,210,230,0.4)';
+  const dimBar = isDark ? 'rgba(30,42,69,0.4)' : 'rgba(200,210,230,0.5)';
+  const dimBorder = isDark ? 'rgba(30,42,69,0.6)' : 'rgba(200,210,230,0.7)';
+
+  // 1. REVENUE TREND
+  const ctx1 = document.getElementById('c1').getContext('2d');
+  const g1 = ctx1.createLinearGradient(0,0,0,280);
+  g1.addColorStop(0, isDark ? 'rgba(0,212,170,0.25)' : 'rgba(0,168,130,0.2)');
+  g1.addColorStop(1, isDark ? 'rgba(0,212,170,0.0)' : 'rgba(0,168,130,0.0)');
+  charts.c1 = new Chart(ctx1,{
+    type:'line',
+    data:{labels:D.monthly.map(d=>d.month),datasets:[{data:D.monthly.map(d=>d.total),borderColor:C.teal,backgroundColor:g1,borderWidth:2,fill:true,tension:.35,pointRadius:0,pointHitRadius:12,pointHoverRadius:5,pointHoverBackgroundColor:C.teal}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{family:"'JetBrains Mono'",size:10}}},y:{grid:{color:gridColor},ticks:{callback:v=>fmt(v),font:{family:"'JetBrains Mono'",size:10}}}},plugins:{tooltip:{callbacks:{title:i=>i[0].label,label:i=>'Revenue: '+fmt(i.raw)+'  ('+fN(D.monthly[i.dataIndex].count)+' patients)'}}}}
+  });
+
+  // 2. ADMISSION DONUT
+  charts.c2 = new Chart(document.getElementById('c2'),{
+    type:'doughnut',
+    data:{labels:D.admissions.map(d=>d.type),datasets:[{data:D.admissions.map(d=>d.total),backgroundColor:[C.teal,C.blue,C.amber],borderColor:cardBg,borderWidth:3,hoverOffset:8}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:true,position:'bottom',labels:{padding:16,usePointStyle:true,pointStyle:'rectRounded',font:{size:12,weight:'500'}}},tooltip:{callbacks:{label:i=>i.label+': '+fmt(i.raw)+' ('+fN(D.admissions[i.dataIndex].count)+' patients)'}}}}
+  });
+
+  // 3. CONDITIONS BAR
+  charts.c3 = new Chart(document.getElementById('c3'),{
+    type:'bar',
+    data:{labels:D.conditions.map(d=>d.condition),datasets:[{data:D.conditions.map(d=>d.total),backgroundColor:COND_C.map(c=>c+'33'),borderColor:COND_C,borderWidth:1.5,borderRadius:6,barThickness:30}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',scales:{x:{grid:{color:gridColorLight},ticks:{callback:v=>fmt(v),font:{family:"'JetBrains Mono'",size:10}}},y:{grid:{display:false},ticks:{font:{size:12,weight:'500'}}}},plugins:{tooltip:{callbacks:{label:i=>fmt(i.raw)+'  ·  '+fN(D.conditions[i.dataIndex].count)+' patients  ·  Avg: '+fmt(D.conditions[i.dataIndex].avg)}}}}
+  });
+
+  // 4. INSURANCE POLAR
+  charts.c4 = new Chart(document.getElementById('c4'),{
+    type:'polarArea',
+    data:{labels:D.insurances.map(d=>d.provider),datasets:[{data:D.insurances.map(d=>d.total),backgroundColor:INS_C.map(c=>c+'44'),borderColor:INS_C,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{r:{grid:{color:gridColorLight},ticks:{display:false}}},plugins:{legend:{display:true,position:'bottom',labels:{padding:12,usePointStyle:true,pointStyle:'circle',font:{size:11}}},tooltip:{callbacks:{label:i=>i.label+': '+fmt(i.raw)+'  ('+fN(D.insurances[i.dataIndex].count)+' patients)'}}}}
+  });
+
+  // 5. AGE BAR
+  charts.c5 = new Chart(document.getElementById('c5'),{
+    type:'bar',
+    data:{labels:D.age_data.map(d=>d.range),datasets:[{data:D.age_data.map(d=>d.avg),backgroundColor:D.age_data.map((_,i)=>{const t=i/(D.age_data.length-1);return`rgba(${Math.round(t*59)},${Math.round(212-t*82)},${Math.round(170+t*76)},0.7)`}),borderRadius:6,barThickness:26}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false},ticks:{font:{family:"'JetBrains Mono'",size:11}}},y:{grid:{color:gridColorLight},beginAtZero:false,ticks:{callback:v=>fmt(v),font:{family:"'JetBrains Mono'",size:10}}}},plugins:{tooltip:{callbacks:{label:i=>'Avg: '+fmt(i.raw)+'  ·  '+fN(D.age_data[i.dataIndex].count)+' patients  ·  Total: '+fmt(D.age_data[i.dataIndex].total)}}}}
+  });
+
+  // 6. YoY BAR (always use 'all' data for YoY)
+  const yoyData = ALL_DATA['all'].yearly;
+  charts.c6 = new Chart(document.getElementById('c6'),{
+    type:'bar',
+    data:{labels:yoyData.map(d=>d.year),datasets:[{data:yoyData.map(d=>d.total),backgroundColor:yoyData.map((d,i)=>{
+      if(yearKey!=='all'&&String(d.year)===yearKey) return C.teal+'cc';
+      if(yearKey!=='all') return dimBar;
+      return i===yoyData.length-1?C.amber+'66':C.teal+'55';
+    }),borderColor:yoyData.map((d,i)=>{
+      if(yearKey!=='all'&&String(d.year)===yearKey) return C.teal;
+      if(yearKey!=='all') return dimBorder;
+      return i===yoyData.length-1?C.amber:C.teal;
+    }),borderWidth:1.5,borderRadius:8,barThickness:48}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false},ticks:{font:{family:"'JetBrains Mono'",size:12,weight:'600'}}},y:{grid:{color:gridColorLight},ticks:{callback:v=>fmt(v),font:{family:"'JetBrains Mono'",size:10}}}},plugins:{tooltip:{callbacks:{label:i=>fmt(i.raw)+'  ('+fN(yoyData[i.dataIndex].count)+' patients)'}}}}
+  });
+
+  // 7. PATIENT VOLUME LINE (always 'all')
+  const ctx7 = document.getElementById('c7').getContext('2d');
+  const g7 = ctx7.createLinearGradient(0,0,0,240);
+  g7.addColorStop(0, isDark ? 'rgba(59,130,246,0.2)' : 'rgba(37,99,235,0.15)');
+  g7.addColorStop(1, isDark ? 'rgba(59,130,246,0.0)' : 'rgba(37,99,235,0.0)');
+  charts.c7 = new Chart(ctx7,{
+    type:'line',
+    data:{labels:yoyData.map(d=>d.year),datasets:[{data:yoyData.map(d=>d.count),borderColor:C.blue,backgroundColor:g7,borderWidth:2.5,fill:true,tension:.3,pointRadius:yoyData.map((d)=>{
+      if(yearKey!=='all'&&String(d.year)===yearKey) return 8;
+      return 5;
+    }),pointBackgroundColor:yoyData.map((d)=>{
+      if(yearKey!=='all'&&String(d.year)===yearKey) return C.blue;
+      return cardBg;
+    }),pointBorderColor:C.blue,pointBorderWidth:2.5,pointHoverRadius:7}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false},ticks:{font:{family:"'JetBrains Mono'",size:12,weight:'600'}}},y:{grid:{color:gridColorLight},ticks:{callback:v=>fN(v),font:{family:"'JetBrains Mono'",size:10}}}},plugins:{tooltip:{callbacks:{label:i=>fN(i.raw)+' patients  ·  Avg billing: '+fmt(yoyData[i.dataIndex].avg)}}}}
+  });
+
+  // HEATMAP
+  buildHeatmap(D);
+
+  // TABLE
+  buildTable(D);
+}
+
+function buildHeatmap(D){
+  const providers = [...new Set(D.heatmap.map(d=>d.provider))];
+  const conditions = [...new Set(D.heatmap.map(d=>d.condition))];
+  const vals = D.heatmap.map(d=>d.total);
+  const minV = Math.min(...vals), maxV = Math.max(...vals);
+  const el = document.getElementById('hm');
+  el.innerHTML = '';
+  el.style.cssText = `display:grid;grid-template-columns:110px repeat(${providers.length},1fr);gap:4px;`;
+
+  // Header
+  el.appendChild(Object.assign(document.createElement('div'),{}));
+  providers.forEach(p=>{
+    const d = document.createElement('div');
+    d.className='hl';d.style.cssText='justify-content:center;font-size:11px;';d.textContent=p;
+    el.appendChild(d);
+  });
+
+  conditions.forEach(cond=>{
+    const lbl = document.createElement('div');
+    lbl.className='hl';lbl.textContent=cond;
+    el.appendChild(lbl);
+    providers.forEach(prov=>{
+      const entry = D.heatmap.find(d=>d.condition===cond&&d.provider===prov);
+      const v = entry?entry.total:0;
+      const range = maxV-minV||1;
+      const t = (v-minV)/range;
+      const alpha = .15+t*.65;
+      const cell = document.createElement('div');
+      cell.className='hc';
+      cell.style.cssText=`background:${isDark?'rgba(0,212,170,'+alpha+')':'rgba(0,168,130,'+alpha+')'};color:${t>.5?(isDark?'#0B0F1A':'#FFF'):(isDark?'#E8ECF4':'#1A1A2E')}`;
+      cell.textContent = (v/1e6).toFixed(1)+'M';
+      cell.title = `${cond} × ${prov}: $${fN(Math.round(v))}`;
+      el.appendChild(cell);
+    });
+  });
+}
+
+function buildTable(D){
+  const tbody = document.getElementById('tb');
+  tbody.innerHTML = '';
+  const totalRev = D.conditions.reduce((s,d)=>s+d.total,0);
+  D.conditions.forEach((d,i)=>{
+    const pct = ((d.total/totalRev)*100).toFixed(1);
+    const los = D.los_data.find(l=>l.condition===d.condition);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:600;color:var(--t1)">${d.condition}</td>
+      <td class="mono">${fN(d.count)}</td>
+      <td class="mono">${fmt(d.avg)}</td>
+      <td class="mono">${los?los.avg_los+'d':'—'}</td>
+      <td><div class="bc"><span class="mono" style="min-width:38px">${pct}%</span><div class="bb"><div class="bf" style="width:${pct}%;background:${COND_C[i%COND_C.length]}"></div></div></div></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ══════════════════════════════════
+// FILTER CLICK HANDLER
+// ══════════════════════════════════
+document.querySelectorAll('.yp').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.yp').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    render(btn.dataset.y);
+  });
+});
+
+// Theme toggle
+document.getElementById('themeBtn').addEventListener('click', () => {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  document.getElementById('themeBtn').innerHTML = isDark ? '&#9790;' : '&#9728;';
+  setChartDefaults();
+  updateTooltipDefaults();
+  const activeYear = document.querySelector('.yp.on').dataset.y;
+  render(activeYear);
+});
+
+// Initial render
+render('all');
+</script>
+</body>
+</html>
